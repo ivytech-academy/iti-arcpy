@@ -7,7 +7,7 @@ import os
 
 
 def write_to_file(content):
-    file_path = r"C:\Data\Work\Private\Ivy\Academy\ITI\tmp_files\report.txt"
+    file_path = r"C:\Data\tmp_files\report.txt"
     with open(file_path, "a+") as f:
         f.writelines("\n")
         f.writelines(content)
@@ -68,13 +68,13 @@ def log_message_list(msg_list):
 
 def copy_cp_to_new_fc():
     #declare variables
-    in_cp_fc = r"C:\Data\Work\Private\Ivy\Academy\ITI\code\py\maps\ITI\ITI.gdb\reference\ref_point"
+    in_cp_fc = r"C:\Data\code\py\maps\ITI\ITI.gdb\reference\ref_point"
 
     # Input polygon feature class
-    in_sector_fc = r"C:\Data\Work\Private\Ivy\Academy\ITI\code\py\maps\ITI\ITI.gdb\reference\sectors"
+    in_sector_fc = r"C:\Data\code\py\maps\ITI\ITI.gdb\reference\sectors"
 
     # Output feature class
-    output_cp_fc = r"C:\Data\Work\Private\Ivy\Academy\ITI\code\py\maps\ITI\ITI.gdb\new_ref_point"
+    output_cp_fc = r"C:\Data\code\py\maps\ITI\ITI.gdb\new_ref_point"
 
     # Polygon field that contains the polygon name/type
     sector_name_field = "Name"
@@ -132,7 +132,7 @@ def copy_cp_to_new_fc():
         print(cp[1])
                                                 
     #3- Create new feature calss    
-    output_cp_fc = r"C:\Data\Work\Private\Ivy\Academy\ITI\code\py\maps\ITI\ITI.gdb\new_ref_point3"
+    output_cp_fc = r"C:\Data\code\py\maps\ITI\ITI.gdb\new_ref_point3"
     out_path = os.path.dirname(output_cp_fc)
     fc_name = os.path.basename(output_cp_fc)
 
@@ -166,7 +166,7 @@ def copy_cp_to_new_fc():
 if __name__ == "__main__":
     write_to_file("From Main")
     
-    workspace = r"C:\Data\Work\Private\Ivy\Academy\ITI\code\py\maps\ITI\ITI.gdb"
+    workspace = r"C:\Data\code\py\maps\ITI\ITI.gdb"
     
     fc_list = list_all_fc(workspace)
     print(type(fc_list))
