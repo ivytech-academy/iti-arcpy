@@ -2,7 +2,7 @@
 
 import arcpy
 import os
-
+import json
 class Toolbox:
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
@@ -132,9 +132,12 @@ class MultiBufferTool:
                     
                     #3- Add Layer to the active map from path
                     active_map.addDataFromPath(unique_fc_name)
-                    
+                           
                      
         arcpy.AddMessage("Buffer created successfully...")
+        
+        #in case we want to set putput parameters
+        parameters[2].value = ""
         
         
         return
@@ -180,21 +183,20 @@ class SimpleBufferTool:
         out_fc = arcpy.Parameter(displayName="Output Buffer",
                                  name="out_buffer",
                                  datatype="DEFeatureClass",
-                                 parameterType="Required",
+                                 parameterType="Derived",
                                  direction="Output") 
         
         parameter_list = [in_fc, in_distance, out_fc]
         return parameter_list
-
+        
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter. This method is called after internal validation."""
         
         #Add our custom validation    
-            
         #Validate selected layer shape
         in_fc = parameters[0] #Get reference to the param object as is
-        
+                
         if in_fc and in_fc.value:            
             desc = arcpy.Describe(in_fc.value)
             shape_type = desc.shapeType #Point Plyline Polygon
@@ -221,30 +223,41 @@ class SimpleBufferTool:
         has been changed."""
         
         #Get reference to the parameters
-        in_layer = parameters[0]
-        out_fc = parameters[2]
+        #in_layer = parameters[0]
+        #out_fc = parameters[2]
         
         #Set out_fc value to scratch GDB + custom name when the user changes in_layer param
-        if in_layer.value and not out_fc.altered:
-            #Get selected layer name
-            layer_name = in_layer.value.name
-            gdb_path = arcpy.env.scratchGDB
-            out_fc_name =  "{0}_bufferiti".format(layer_name) 
+        # if in_layer.value and not out_fc.altered:
+        #     #Get selected layer name
+        #     layer_name = in_layer.value.name
+        #     gdb_path = arcpy.env.scratchGDB
+        #     out_fc_name =  "{0}_bufferiti".format(layer_name) 
             
-            #Change value of out fc
-            out_fc.value = os.path.join(gdb_path, out_fc_name)
+        #     #Change value of out fc
+        #     out_fc.value = os.path.join(gdb_path, out_fc_name)
               
         
         return
-        
+           
         
     def execute(self, parameters, messages):
         """The source code of the tool."""
         arcpy.AddMessage("Reading input parameters...")
         
-        in_fc = parameters[0].value
+        in_fc = parameters[0]
         buffer_distance = parameters[1].value
-        out_buffer_fc = parameters[2].valueAsText
+        #out_buffer_fc = parameters[2].valueAsText
+        
+        #Set out fc based on selected layer
+        out_buffer_fc = ""
+        if in_fc.value:
+            #Get selected layer name
+            layer_name = in_fc.value.name
+            gdb_path = arcpy.env.scratchGDB
+            out_fc_name =  "{0}_bufferiti".format(layer_name) 
+            
+            #Change value of out fc
+            out_buffer_fc = os.path.join(gdb_path, out_fc_name)
             
         #Validate Optional parameters
         if not buffer_distance or buffer_distance == 0:
@@ -260,15 +273,29 @@ class SimpleBufferTool:
         #Create buffer
         arcpy.AddMessage("Creating buffer...")
         
-        arcpy.analysis.Buffer(in_features=in_fc,
+        arcpy.analysis.Buffer(in_features=in_fc.value,
                               out_feature_class=out_buffer_fc, 
                               buffer_distance_or_field="{0} Meters".format(buffer_distance))
         
         arcpy.AddMessage("Buffer created successfully...")
         
+        geo_json = convert_fc_to_geojson(out_buffer_fc)
+        #json.dumps(geo_json.to_dict(), ensure_ascii=False)
+        
+        parameters[2].value = geo_json
         
         return
 
+
+def convert_fc_to_geojson(in_fc):
+    if arcpy.Exists(in_fc):        
+        fs = arcpy.FeatureSet(in_fc)
+        #Alt approach
+        # fs = arcpy.FeatureSet()
+        # fs.load(in_fc)
+        
+        return fs.GeoJSON
+    
     
     
 
