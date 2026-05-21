@@ -85,6 +85,15 @@ class MultiBufferTool:
                
         
         return
+    
+    
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        
+        
+        return
         
         
     def execute(self, parameters, messages):
@@ -114,6 +123,17 @@ class MultiBufferTool:
                                         out_feature_class=unique_fc_name, 
                                         buffer_distance_or_field="{0} Meters".format(float_dist))
                     
+                    #Add out buffer fc to the Map
+                    #1- Get reference to the current project
+                    aprx = arcpy.mp.ArcGISProject("CURRENT")
+                    
+                    #2- Get reference to the active map
+                    active_map = aprx.activeMap
+                    
+                    #3- Add Layer to the active map from path
+                    active_map.addDataFromPath(unique_fc_name)
+                    
+                     
         arcpy.AddMessage("Buffer created successfully...")
         
         
@@ -192,6 +212,28 @@ class SimpleBufferTool:
             #Warning messages don't prevent tool from running
             buffer_distance.setWarningMessage("Distances greater than 300 might impact tool performance")     
                
+        
+        return
+    
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        
+        #Get reference to the parameters
+        in_layer = parameters[0]
+        out_fc = parameters[2]
+        
+        #Set out_fc value to scratch GDB + custom name when the user changes in_layer param
+        if in_layer.value and not out_fc.altered:
+            #Get selected layer name
+            layer_name = in_layer.value.name
+            gdb_path = arcpy.env.scratchGDB
+            out_fc_name =  "{0}_bufferiti".format(layer_name) 
+            
+            #Change value of out fc
+            out_fc.value = os.path.join(gdb_path, out_fc_name)
+              
         
         return
         
